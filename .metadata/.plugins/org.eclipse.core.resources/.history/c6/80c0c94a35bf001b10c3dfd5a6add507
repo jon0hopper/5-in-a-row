@@ -1,0 +1,10 @@
+package com.jhop.restservice;
+
+public class GameMove {
+
+	@Getter
+	private String player;
+	@Getter
+	private Integer column;
+	
+}

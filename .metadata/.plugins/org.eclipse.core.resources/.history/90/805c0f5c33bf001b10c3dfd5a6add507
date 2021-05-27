@@ -1,0 +1,11 @@
+package com.jhop.restservice;
+
+public class MoveResult {
+	@Getter
+	private boolean allowed;
+	
+	@Getter
+	private String errorReason;
+	
+
+}

@@ -1,0 +1,41 @@
+package com.jhop.rest_client;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.mockito.Mock;
+import org.mockito.Mockito;
+
+/**
+ * Unit test for Connect5Client
+ */
+public class Connect5ClientTest 
+{
+	
+	Connect5Client client;
+	
+	@BeforeEach
+	void Setup() {
+		client = Mockito.spy(new Connect5Client());	
+	}
+	
+	@AfterEach
+	void TearDown() {
+		
+	}
+	
+    
+	@Test
+    public void testStartGame()
+    {
+		doReturn().when(client).getREST(anyString());
+		
+		{"finnished":false,"id":"f56316d0-bdbb-47ca-bbdd-c57edcddf54d","board":[[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],"full":true}
+		
+		
+        assertTrue( true );
+    }
+}

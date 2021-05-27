@@ -1,0 +1,10 @@
+package com.jhop.rest_client;
+
+public class ConnectionResult {
+	
+	@Getter
+	@Setter
+	Integer httpCode;
+	
+
+}

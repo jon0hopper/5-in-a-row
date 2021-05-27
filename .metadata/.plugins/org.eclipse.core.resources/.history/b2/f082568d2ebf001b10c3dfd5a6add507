@@ -1,0 +1,137 @@
+package com.jhop.rest_client;
+
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Scanner;
+
+import org.json.JSONObject;
+
+
+
+public class Connect5Client {
+
+	public static void main(String[] args) throws IOException{
+		Connect5Client myApp = new Connect5Client();
+		myApp.play();
+	}
+	
+	public void play() throws IOException {
+				
+		Scanner scanner = new Scanner(System.in);
+		
+		System.out.println("Welcome to 5-in-a-Row");
+
+		System.out.println("What is your name?");
+		String name = scanner.nextLine();
+		System.out.println(String.format("Hi %s, Lets Play", name));
+		
+
+		//Start Game
+		JSONObject game = startGame(name);
+		String gameID = game.getString("ID");
+		
+		System.out.print(String.format("Waiting for an Oponent"));
+		
+		//Wait for Opponent
+		while (!game.getBoolean("Started")){
+			System.out.print(".");
+			//A busy poll isnt great, but it will do for now.
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}  
+			game = getGameState(gameID);
+		}
+		System.out.println();
+		System.out.println(String.format("We have a Game!"));
+		
+		System.out.println(String.format("Player1:%s vs Player2: %s", game.getString("player1"),game.getString("player2")));
+		//while game not over
+
+			//waitMyTurn
+		
+			//make move
+		System.out.println(String.format("It’s your turn %s, please enter column (1-9):", name));
+		
+		scanner.close();
+		
+		System.out.println("Thanks for using PICLER.");
+		
+	}
+	
+	
+	/*
+	 * Returns the game as a JSON String
+	 */
+	public JSONObject startGame(String name) throws IOException{
+
+		ConnectionResult result = getREST("startGame?name="+name);
+		if(result.getHttpCode() == 200){
+			JSONObject game = new JSONObject(result.getHttpResponse());
+			//TODO validate the game
+			return game;
+		}		
+		// an error happened
+		return null;
+	}
+	
+	
+	/*
+	 * Returns the game as a JSON String
+	 */
+	public JSONObject getGameState(String name) throws IOException{
+
+		
+		ConnectionResult result = getREST("startGame?name="+name);
+		
+		HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8080/startGame?name="+name).openConnection();
+		connection.setRequestMethod("GET");
+		
+		int responseCode = connection.getResponseCode();
+		if(responseCode == 200){
+			String response = "";
+			Scanner scanner = new Scanner(connection.getInputStream());
+			while(scanner.hasNextLine()){
+				response += scanner.nextLine();
+				response += "\n";
+			}
+			scanner.close();
+
+			JSONObject game = new JSONObject(response);
+			
+			//TODO validate the game
+			
+			return game;
+		}
+		
+		// an error happened
+		return null;
+	}
+	
+	protected ConnectionResult getREST(String request) throws MalformedURLException, IOException {
+		HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8080/" + request).openConnection();
+		connection.setRequestMethod("GET");
+		
+		int responseCode = connection.getResponseCode();
+		String response = "";
+		
+		if(responseCode == 200){
+			Scanner scanner = new Scanner(connection.getInputStream());
+			while(scanner.hasNextLine()){
+				response += scanner.nextLine();
+				response += "\n";
+			}
+			scanner.close();
+		}
+		
+		return new ConnectionResult(responseCode,response);
+		
+	}
+}

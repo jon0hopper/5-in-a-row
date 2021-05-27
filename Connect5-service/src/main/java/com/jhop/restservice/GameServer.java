@@ -1,7 +1,9 @@
 package com.jhop.restservice;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -11,7 +13,7 @@ public class GameServer {
 
 	private Integer count = 0;
 	
-	List<Game> games = new ArrayList<>();
+	Map<String, Game> games = new HashMap<>();
 	
 	Integer nextInt() {
 		return count++;
@@ -26,24 +28,32 @@ public class GameServer {
 	public Game startGame(String name){
 		Game game =null;
 		//Check if the name is already in the list.
-		boolean nameInUse = games.stream().filter(g -> !g.isFinnished()).anyMatch(g -> g.hasPlayer(name));
+		boolean nameInUse = games.values().stream().filter(g -> !g.isFinnished()).anyMatch(g -> g.hasPlayer(name));
 		
 		//If we are already playing, we cant start a new game
 		if(nameInUse) {
 			//log it
 		} else {
 
-			Optional<Game> gameOpt = games.stream().filter(g -> !g.isFinnished()).filter(g -> !g.isFull()).findFirst();
+			Optional<Game> gameOpt = games.values().stream().filter(g -> !g.isFinnished()).filter(g -> !g.isStarted()).findFirst();
 			if(gameOpt.isPresent()) {
 				gameOpt.get().addPlayer(name);
 				game = gameOpt.get();
 			} else {
 				//create a new game
 				game = new Game(name);
-				games.add(game);			
+				games.put(game.getID(),game);			
 			}
 		}
 		
 		return game;
 	}
+	
+	/**
+	 * Returns the game, or null if none found
+	 */
+	public Game getGame(String id) {
+		return games.get(id);
+	}
+	
 }

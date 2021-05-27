@@ -1,0 +1,12 @@
+package com.jhop.restservice;
+
+import lombok.Getter;
+
+public class GameMove {
+
+	@Getter
+	private String player;
+	@Getter
+	private Integer column;
+	
+}

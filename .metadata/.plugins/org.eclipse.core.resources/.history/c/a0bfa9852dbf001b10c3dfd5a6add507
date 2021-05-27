@@ -1,0 +1,17 @@
+package com.jhop.rest_client;
+
+import lombok.Getter;
+import lombok.Setter;
+
+public class ConnectionResult {
+	
+	@Getter
+	@Setter
+	Integer httpCode;
+
+	@Getter
+	@Setter
+	String httpResponse;
+	
+
+}
