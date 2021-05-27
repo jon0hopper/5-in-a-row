@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring accessors="true" comment="Delete element from project &apos;rest-client&apos;&#x0D;&#x0A;- Original project: &apos;rest-client&apos;&#x0D;&#x0A;- Original element: &apos;rest-client/src/main/java/com.jhop.rest_client.com.jhop.rest_client&apos;" description="Delete element" element1="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.jhop.rest_client.com.jhop.rest_client" element2="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.jhop.rest_client.com.jhop" element3="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.jhop.rest_client.com" elements="3" flags="589830" id="org.eclipse.jdt.ui.delete" resources="0" stamp="1622126660996" subPackages="false" version="1.0"/>
+</session>
