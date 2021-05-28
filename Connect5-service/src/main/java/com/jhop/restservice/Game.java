@@ -7,34 +7,38 @@ import java.util.UUID;
 import lombok.Getter;
 
 public class Game {
-	
+
 	private UUID gameID;
 
 	@Getter
-	private String player1=null;
+	private String player1 = null;
 	@Getter
-	private String player2=null;
+	private String player2 = null;
+
+	private static int COLUMNS = 9;
+	private static int ROWS = 6;
 	
-	Integer[][] board = new Integer[5][6];
-	
+	Integer[][] board = new Integer[COLUMNS][ROWS];
+
 	@Getter
-	private String turn=null;
-	
+	private String turn = null;
+
 	Integer winner = null;
 
 	public Game(String name) {
 		gameID = java.util.UUID.randomUUID();
 		player1 = name;
-		
-        // Fill each row with 10. 
-        for (Integer[] row : board) {
-            Arrays.fill(row, 0);
-        }   
+
+		// Fill each row with 0.
+		for (Integer[] row : board) {
+			Arrays.fill(row, 0);
+		}
 	}
-	
+
 	public boolean addPlayer(String name) {
-		if (player2 != null) {
+		if (player2 != null || player1.equals(name)) {
 			// the game is already full
+			// or the same player added twice
 			return false;
 		} else {
 			player2 = name;
@@ -50,45 +54,70 @@ public class Game {
 			return true;
 		}
 	}
-	
+
 	public String getID() {
 		return gameID.toString();
 	}
-	
-	
+
 	public boolean isStarted() {
-		return (player1!=null & player2!=null);
+		return (player1 != null & player2 != null);
 	}
 
 	public boolean hasPlayer(String name) {
 		return (name.equals(player1) || name.equals(player2));
 	}
-	
+
 	public boolean isFinnished() {
-		return winner!=null;
+		return winner != null;
 	}
 
-	public Integer[][] getBoard(){
+	public Integer[][] getBoard() {
 		return board;
 	}
-	
+
 	public boolean makeMove(String player, Integer column) {
-		//TODO take real turns
-		if(!player.equals(turn)) {
-			//Its not your turn
+
+		if (column < 1 || column > COLUMNS) {
+			// invalid column
 			return false;
 		}
-		
-		if(player1.equals(player)) {
-			turn = player2;
-		} else {
-			turn = player1;
+
+		// check if its my turn
+		if (!player.equals(turn)) {
+			// Its not your turn
+			return false;
 		}
-		
-		return true;
+
+		// get my token
+		int disk = 1;
+		if (player.equals(player2)) {
+			disk = 2;
+		}
+
+		// make the move
+		Integer[] row = board[column - 1];
+
+		boolean legal = false;
+		for (int i = 0; i < ROWS; i++) {
+			if (row[i] == 0) {
+				row[i] = disk;
+				legal = true;
+				break;
+			}
+		}
+		if (legal) {
+			// change players turn
+			if (player1.equals(player)) {
+				turn = player2;
+			} else {
+				turn = player1;
+			}
+		}
+
+		return legal;
 	}
-	
+
 //TODO	add function to mark the game
-	
+
 //TODO	add funtion to make a move.
 }

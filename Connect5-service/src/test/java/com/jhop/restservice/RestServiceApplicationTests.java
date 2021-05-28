@@ -150,8 +150,6 @@ class RestServiceApplicationTests {
 				.andExpect(jsonPath("$.allowed", is(false)))
 				.andReturn();
 		
-
-		
 		//Other Player is allowed
 		response = mvc
 				.perform(MockMvcRequestBuilders.get("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON))

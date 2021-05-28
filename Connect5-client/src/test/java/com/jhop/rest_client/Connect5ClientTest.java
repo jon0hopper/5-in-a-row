@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.atMost;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,10 +58,28 @@ public class Connect5ClientTest
 		String jsonString = "{\"finnished\":false,\"id\":\""+gameID+"\",\"board\":[[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],\"full\":true}";
 		ConnectionResult response = new ConnectionResult(200, jsonString);
 		doReturn(response).when(client).getREST(anyString());
+		doReturn("jhop").when(client).getNameFromUser();
 		
-		JSONObject game = client.startGame("jhop");
+		JSONObject game = client.startGame();
 		
 		assertEquals(gameID,game.getString("id"));
+		//  TODO update the response 
+		//assertEquals("jhop",game.getString("player1"));
 		
     }
+	
+	@Test
+	public void printBoard() {
+		
+		String jsonString = "{\"player1\":\"tom\",\"player2\":null,\"board\":[[1,0,0,0,0,2],[2,0,0,0,0,1],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],\"turn\":null,\"id\":\"39d8c302-cfaa-4bcd-9b27-47587dc0bca4\",\"started\":false,\"finnished\":false}";
+	
+
+		JSONObject game = new JSONObject(jsonString);
+		
+		client.printBoard(game);
+		
+		
+		
+		
+	}
 }

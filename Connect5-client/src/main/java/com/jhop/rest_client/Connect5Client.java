@@ -7,12 +7,23 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class Connect5Client {
 
+	
+	private static final int POLL_RATE = 500;
+	private static final String FINNISHED = "finnished";
+	private static final String ID = "id";
+	private static final String PLAYER2 = "player2";
+	private static final String PLAYER1 = "player1";
+	private static final String TURN = "turn";
+	
 	
 	String name = null;
 	String gameID = null;
@@ -24,55 +35,68 @@ public class Connect5Client {
 
 		System.out.println("Welcome to 5-in-a-Row");
 
-		System.out.println("What is your name?");
-		name = scanner.nextLine();
-		System.out.println(String.format("Hi %s, Lets Play", name));
-
 		// Start Game
-		JSONObject game = startGame(name);
-		gameID = game.getString("id");
+		JSONObject game = startGame();
+		gameID = game.getString(ID);
 
 		// Wait for Opponent
 		game = waitForOponent(game);
 		
-		System.out.println("game:" + game.toString());
+		debug("game:" + game.toString());
 		System.out.println(
-				String.format("Player1:%s vs Player2: %s", game.getString("player1"), game.getString("player2")));
+				String.format("Player1:%s vs Player2: %s", game.getString(PLAYER1), game.getString(PLAYER2)));
 		
 		// while game not over
-		while(!game.getBoolean("finnished")){
-		// waitMyTurn
+		while(!game.getBoolean(FINNISHED)){
 			game = waitMyTurn();
-		// make move
+			printGame(game);
 			makeAMove();
+			printGame(getGameState(gameID));
 		}
 
 		scanner.close();
 
-		System.out.println("Thanks for using PICLER.");
+		System.out.println("Thanks for playing");
 
 	}
-
-
 
 	/*
 	 * Returns the game as a JSON String
+	 * This also sets the name
 	 */
-	public JSONObject startGame(String name) throws IOException {
+	public JSONObject startGame() throws IOException {
 
-		ConnectionResult result = getREST("startGame?name=" + name);
-		if (result.getHttpCode() == 200) {
+		JSONObject game=null;
+		while( game == null) {
+
+			name = getNameFromUser();
 			
-			// TODO validate the game
-			
-			JSONObject game = new JSONObject(result.getHttpResponse());
-			
-			return game;
+			ConnectionResult result = getREST("startGame?name=" + name);
+
+			if (result.getHttpCode() == 200) {
+				
+				// TODO validate the game	
+				game = new JSONObject(result.getHttpResponse());
+				
+			} else if (result.getHttpCode() == 403) {
+				System.out.println(String.format("Unable to start game because name is in use"));
+			} else {
+				System.out.println(String.format("Unable to start game code %s",result.getHttpCode()));
+			}
 		}
+		
 		// an error happened
-		return null;
+		return game;
 	}
 
+
+	String getNameFromUser() {
+		System.out.println("What is your name?");
+		String newName = scanner.nextLine();
+		System.out.println(String.format("Hi %s, Lets Play", newName));
+		
+		return newName;
+	}
 
 	private JSONObject waitForOponent(JSONObject game) throws IOException {
 		JSONObject newGame = game;
@@ -82,7 +106,7 @@ public class Connect5Client {
 			System.out.print(".");
 			// A busy poll isnt great, but it will do for now.
 			try {
-				Thread.sleep(500);
+				Thread.sleep(POLL_RATE);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -99,12 +123,12 @@ public class Connect5Client {
 
 	private JSONObject waitMyTurn() throws IOException {
 		JSONObject newGame = getGameState(gameID);
-		System.out.print(String.format("Waiting for My Turn"));
-		while (!name.equals(newGame.getString("turn"))) {
+		System.out.print(String.format("Waiting for %s to move" , newGame.getString(TURN)));
+		while (!name.equals(newGame.getString(TURN))) {
 			System.out.print(".");
 			// A busy poll isnt great, but it will do for now.
 			try {
-				Thread.sleep(500);
+				Thread.sleep(POLL_RATE);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -117,7 +141,6 @@ public class Connect5Client {
 	}
 	
 	private void makeAMove() throws IOException {
-		
 		Boolean allowed = false;
 		while(!allowed) {
 			
@@ -132,12 +155,14 @@ public class Connect5Client {
 				
 			ConnectionResult result = postREST("Game/" + gameID, move);
 			JSONObject moveResult = new JSONObject(result.getHttpResponse());
-			System.out.println("result" + moveResult.toString());
+			debug("result" + moveResult.toString());
 			allowed = moveResult.getBoolean("allowed");
 			if(!allowed) {
 				System.out.println("Move Not allowed:" + moveResult.getString("errorReason"));			
 			}
 		} 
+		
+		
 	}
 	
 	/*
@@ -152,11 +177,11 @@ public class Connect5Client {
 			JSONObject game = new JSONObject(result.getHttpResponse());
 			// TODO validate the game
 
-			System.out.println("getGame:" + game.toString());
+			debug("getGame:" + game.toString());
 			return game;
-		}
+		} 
 
-		// an error happened
+		// some other code
 		return null;
 	}
 
@@ -166,6 +191,8 @@ public class Connect5Client {
 		HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8080/" + request).openConnection();
 		connection.setRequestMethod("GET");
 
+		//TODO handle host not responding
+		
 		int responseCode = connection.getResponseCode();
 		String response = "";
 
@@ -177,7 +204,7 @@ public class Connect5Client {
 			scanner.close();
 		}
 
-		System.out.println("getRest" + response);
+		debug("getRest" + response);
 		return new ConnectionResult(responseCode, response);
 
 	}
@@ -187,7 +214,7 @@ public class Connect5Client {
 		connection.setRequestMethod("POST");
 		connection.setRequestProperty("Content-Type", "application/json; utf-8");
 
-		System.out.println("Post:" + body.toString());
+		debug("Post:" + body.toString());
 		
 		connection.setDoOutput(true);
 	    OutputStreamWriter wr = new OutputStreamWriter(connection.getOutputStream());
@@ -206,14 +233,51 @@ public class Connect5Client {
 		}
 
 		return new ConnectionResult(responseCode, response);
-
+	}
+	
+	void printGame(JSONObject game) throws IOException {
+		System.out.print(String.format(" %s (X) vs %s (O)",game.getString(PLAYER1),game.getString(PLAYER2)));
+		printBoard(game);
+	}
+	
+	void printBoard(JSONObject game) {
+		JSONArray board = game.getJSONArray("board");
+		List<Object> columns = board.toList();
+		ArrayList<Integer> row = (ArrayList) columns.get(0);
+	
+		for(int rowNumber = row.size()-1; rowNumber>=0; rowNumber--) {
+			for(Object c: columns) {
+				row = (ArrayList) c;
+				char disk = ' ';
+				
+				switch(row.get(rowNumber)) {
+				case 1:
+					disk = 'X';
+					break;
+				case 2:
+					disk = 'O';
+					break;
+				};
+				
+				System.out.print("[ "+ disk +" ] ");
+			}
+			System.out.println();
+		}
+	}
+	
+	private void debug(String msg) {
+		//System.out.println(msg);
 	}
 	
 	
 	
 	public static void main(String[] args) throws IOException {
 		Connect5Client myApp = new Connect5Client();
+		try {
 		myApp.play();
+		}catch(java.net.ConnectException e) {
+			System.out.println("Unable to connect.  Maybe the Server needs to be started");
+		}
 	}
 
 

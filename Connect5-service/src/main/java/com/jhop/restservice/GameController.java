@@ -2,6 +2,7 @@ package com.jhop.restservice;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class GameController {
@@ -32,7 +34,10 @@ public class GameController {
 	public Game startGame(@RequestParam(value = "name", defaultValue = "Player1") String name) {
 		
 		Game game = gameServer.startGame(name);
-		
+		if(game==null) {
+			throw new ResponseStatusException(
+			          HttpStatus.FORBIDDEN, "Name is in use");
+		}
 		return game;
 	}
 	

@@ -42,7 +42,6 @@ public class GameServerTest {
 		
 		//Third player joins the game
 		assertNotEquals(gameServer.startGame("dhop").getID(),game.getID());
-		
-		
+	
 	}
 }
