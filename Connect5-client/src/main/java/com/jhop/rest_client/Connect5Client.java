@@ -35,13 +35,14 @@ public class Connect5Client {
 		// Wait for Opponent
 		game = waitForOponent(game);
 		
+		System.out.println("game:" + game.toString());
 		System.out.println(
 				String.format("Player1:%s vs Player2: %s", game.getString("player1"), game.getString("player2")));
 		
 		// while game not over
 		while(!game.getBoolean("finnished")){
 		// waitMyTurn
-			game = waitMyTurn(game);
+			game = waitMyTurn();
 		// make move
 			makeAMove();
 		}
@@ -61,8 +62,11 @@ public class Connect5Client {
 
 		ConnectionResult result = getREST("startGame?name=" + name);
 		if (result.getHttpCode() == 200) {
-			JSONObject game = new JSONObject(result.getHttpResponse());
+			
 			// TODO validate the game
+			
+			JSONObject game = new JSONObject(result.getHttpResponse());
+			
 			return game;
 		}
 		// an error happened
@@ -84,16 +88,17 @@ public class Connect5Client {
 				e.printStackTrace();
 			}
 			newGame = getGameState(gameID);
+		
 		}
 		
 		System.out.println();
 		System.out.println(String.format("We have a Game!"));
 		
-		return game;
+		return newGame;
 	}
 
-	private JSONObject waitMyTurn(JSONObject game) throws IOException {
-		JSONObject newGame = game;
+	private JSONObject waitMyTurn() throws IOException {
+		JSONObject newGame = getGameState(gameID);
 		System.out.print(String.format("Waiting for My Turn"));
 		while (!name.equals(newGame.getString("turn"))) {
 			System.out.print(".");
@@ -122,11 +127,12 @@ public class Connect5Client {
 			Integer column = scanner.nextInt();
 			
 			JSONObject move = new JSONObject();
-			move.append("player", name);
-			move.append("column", column);
+			move.put("player", name);
+			move.put("column", column);
 				
 			ConnectionResult result = postREST("Game/" + gameID, move);
-			JSONObject moveResult = new JSONObject(result);
+			JSONObject moveResult = new JSONObject(result.getHttpResponse());
+			System.out.println("result" + moveResult.toString());
 			allowed = moveResult.getBoolean("allowed");
 			if(!allowed) {
 				System.out.println("Move Not allowed:" + moveResult.getString("errorReason"));			
@@ -146,6 +152,7 @@ public class Connect5Client {
 			JSONObject game = new JSONObject(result.getHttpResponse());
 			// TODO validate the game
 
+			System.out.println("getGame:" + game.toString());
 			return game;
 		}
 
@@ -166,11 +173,11 @@ public class Connect5Client {
 			Scanner scanner = new Scanner(connection.getInputStream());
 			while (scanner.hasNextLine()) {
 				response += scanner.nextLine();
-				response += "\n";
 			}
 			scanner.close();
 		}
 
+		System.out.println("getRest" + response);
 		return new ConnectionResult(responseCode, response);
 
 	}
@@ -180,6 +187,7 @@ public class Connect5Client {
 		connection.setRequestMethod("POST");
 		connection.setRequestProperty("Content-Type", "application/json; utf-8");
 
+		System.out.println("Post:" + body.toString());
 		
 		connection.setDoOutput(true);
 	    OutputStreamWriter wr = new OutputStreamWriter(connection.getOutputStream());
@@ -190,12 +198,11 @@ public class Connect5Client {
 		String response = "";
 
 		if (responseCode == 200) {
-			Scanner scanner = new Scanner(connection.getInputStream());
-			while (scanner.hasNextLine()) {
-				response += scanner.nextLine();
-				response += "\n";
+			Scanner input = new Scanner(connection.getInputStream());
+			while (input.hasNextLine()) {
+				response += input.nextLine();
 			}
-			scanner.close();
+			input.close();
 		}
 
 		return new ConnectionResult(responseCode, response);

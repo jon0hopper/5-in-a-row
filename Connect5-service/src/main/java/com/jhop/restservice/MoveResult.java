@@ -10,6 +10,7 @@ import lombok.Setter;
 @AllArgsConstructor()
 public class MoveResult {
 	@Getter
+	@Setter
 	@NonNull
 	private Boolean allowed;
 	
