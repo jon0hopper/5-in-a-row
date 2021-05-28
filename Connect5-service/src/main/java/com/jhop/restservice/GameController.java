@@ -86,6 +86,7 @@ public class GameController {
 		
 		
 		boolean moveDone = game.makeMove(newMove.getPlayer(), newMove.getColumn());
+		
 		MoveResult result = new MoveResult(moveDone);
 		if(!moveDone) {
 			result.setErrorReason("Invalid Move");

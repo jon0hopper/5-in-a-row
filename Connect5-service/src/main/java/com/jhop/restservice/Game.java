@@ -17,13 +17,15 @@ public class Game {
 
 	private static int COLUMNS = 9;
 	private static int ROWS = 6;
-	
+
 	Integer[][] board = new Integer[COLUMNS][ROWS];
 
 	@Getter
 	private String turn = null;
 
-	Integer winner = null;
+	//Player 0 ie no winner yet
+	@Getter
+	Integer winner = 0;
 
 	public Game(String name) {
 		gameID = java.util.UUID.randomUUID();
@@ -68,13 +70,20 @@ public class Game {
 	}
 
 	public boolean isFinnished() {
-		return winner != null;
+		return winner != 0;
 	}
 
 	public Integer[][] getBoard() {
 		return board;
 	}
 
+	/**
+	 * Make a move.
+	 * 
+	 * @param player
+	 * @param column 1-9
+	 * @return true if its this players turn, and the move is legal
+	 */
 	public boolean makeMove(String player, Integer column) {
 
 		if (column < 1 || column > COLUMNS) {
@@ -98,6 +107,7 @@ public class Game {
 		Integer[] row = board[column - 1];
 
 		boolean legal = false;
+		// Move up through the rows, and put my disk in the first free spot
 		for (int i = 0; i < ROWS; i++) {
 			if (row[i] == 0) {
 				row[i] = disk;
@@ -105,6 +115,7 @@ public class Game {
 				break;
 			}
 		}
+
 		if (legal) {
 			// change players turn
 			if (player1.equals(player)) {
@@ -112,12 +123,70 @@ public class Game {
 			} else {
 				turn = player1;
 			}
+			
+			//mark the game
+			winner = getWinner(board);
 		}
 
 		return legal;
 	}
 
+	/**
+	 * This runs through the game to see if anyone won A winner is someone with 5 in
+	 * a row.
+	 * 
+	 * @return
+	 */
+	Integer getWinner(Integer[][] aBoard) {
+		Integer winner = 0;
+
+		int inARow = 5;
+		// Rows
+		Integer last = 0;
+		Integer matches = 0;
+		for (int y = 0; y < ROWS; y++) {
+			for (int x = 0; x < COLUMNS; x++) {
+				if (aBoard[x][y] == last && last != 0) {
+					matches++;
+				} else {
+					//there is always 1 matching
+					matches = 1;
+				}
+				last = aBoard[x][y];
+				if (matches >= inARow) {
+					// We have a winner!
+					return last;
+				}
+			}
+		}
+
+		// Columns
+		last = 0;
+		matches = 0;
+		for (int x = 0; x < COLUMNS; x++) {
+			for (int y = 0; y < ROWS; y++) {
+				if (aBoard[x][y] == last && last != 0) {
+					matches++;
+				} else {
+					//there is always 1 matching
+					matches = 1;
+				}
+				last = aBoard[x][y];
+				if (matches >= inARow) {
+					// We have a winner!
+					return last;
+				}
+			}
+		}
+			
+		// diagonals
+
+		
+		//Nooone one yet
+		return winner;
+
+	}
+
 //TODO	add function to mark the game
 
-//TODO	add funtion to make a move.
 }

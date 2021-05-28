@@ -50,10 +50,20 @@ public class Connect5Client {
 		while(!game.getBoolean(FINNISHED)){
 			game = waitMyTurn();
 			printGame(game);
-			makeAMove();
-			printGame(getGameState(gameID));
+			if(!game.getBoolean(FINNISHED)) {
+				makeAMove();
+			}
+			game = getGameState(gameID);
+			printGame(game);
 		}
 
+		//TODO  mark diagonals
+		//TODO  quit the game
+		//TODO play again
+		//TODO just leave game
+		//TODO tidy up and comment
+		//TODO write up a documnet
+		
 		scanner.close();
 
 		System.out.println("Thanks for playing");
@@ -236,8 +246,22 @@ public class Connect5Client {
 	}
 	
 	void printGame(JSONObject game) throws IOException {
-		System.out.print(String.format(" %s (X) vs %s (O)",game.getString(PLAYER1),game.getString(PLAYER2)));
+		System.out.println();
+		System.out.println(String.format(" %s (X) vs %s (O)",game.getString(PLAYER1),game.getString(PLAYER2)));
 		printBoard(game);
+		int winner = game.getInt("winner");
+		if(winner!=0) {
+			String winnerName = game.getString("player" + winner);
+			System.out.println("----------------------------------------------");
+			
+			if(winnerName.equals(name)) {
+				//I have won"
+				System.out.println(String.format(" Congratulations %s! You won the game",winnerName));
+			}else {
+				System.out.println(String.format(" Sorry, %s has won the game",winnerName));
+			}
+			System.out.println("----------------------------------------------");	
+		}
 	}
 	
 	void printBoard(JSONObject game) {
