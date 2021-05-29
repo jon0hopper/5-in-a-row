@@ -45,6 +45,66 @@ public class GameTest {
 		assertFalse(game.makeMove(game.getTurn(), 1));
 	}
 
+	
+	@Test
+	void testQuit() {
+
+		Game game = new Game("tim");
+
+		// it isnt started yet, there is only one player
+		assertFalse(game.isStarted());
+
+		assertTrue(game.addPlayer("tam"));
+		// now we have two players
+		assertTrue(game.isStarted());
+
+		//play a little
+		for (int i = 0; i < 3; i++) {
+			assertTrue(game.makeMove(game.getTurn(), 1));
+		}
+
+		//quit wrong name
+		game.quit("tom");
+
+		//Tom wasnt playing
+		assertFalse(game.isFinished());
+		assertEquals(0,game.getWinner());
+
+		//quit tam
+		game.quit("tam");
+
+		assertTrue(game.isFinished());
+		assertEquals(1,game.getWinner());
+	}
+
+	@Test
+	void testQuit2() {
+
+		Game game = new Game("tim");
+
+		// it isnt started yet, there is only one player
+		assertFalse(game.isStarted());
+
+		assertTrue(game.addPlayer("tam"));
+		// now we have two players
+		assertTrue(game.isStarted());
+
+		//play a little
+		for (int i = 0; i < 3; i++) {
+			assertTrue(game.makeMove(game.getTurn(), 1));
+		}
+
+		//Its ok now
+		assertFalse(game.isFinished());
+		assertEquals(0,game.getWinner());
+
+		//quit tim
+		game.quit("tim");
+
+		assertTrue(game.isFinished());
+		assertEquals(2,game.getWinner());
+	}
+	
 	@Test
 	void testNoWinnerColumn() {
 		Integer[][] board = { { 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0} };

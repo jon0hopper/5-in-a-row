@@ -69,7 +69,7 @@ public class Game {
 		return (name.equals(player1) || name.equals(player2));
 	}
 
-	public boolean isFinnished() {
+	public boolean isFinished() {
 		return winner != 0;
 	}
 

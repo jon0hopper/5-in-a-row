@@ -28,14 +28,14 @@ public class GameServer {
 	public Game startGame(String name){
 		Game game =null;
 		//Check if the name is already in the list.
-		boolean nameInUse = games.values().stream().filter(g -> !g.isFinnished()).anyMatch(g -> g.hasPlayer(name));
+		boolean nameInUse = games.values().stream().filter(g -> !g.isFinished()).anyMatch(g -> g.hasPlayer(name));
 		
 		//If we are already playing, we cant start a new game
 		if(nameInUse) {
 			//log it
 		} else {
 
-			Optional<Game> gameOpt = games.values().stream().filter(g -> !g.isFinnished()).filter(g -> !g.isStarted()).findFirst();
+			Optional<Game> gameOpt = games.values().stream().filter(g -> !g.isFinished()).filter(g -> !g.isStarted()).findFirst();
 			if(gameOpt.isPresent()) {
 				gameOpt.get().addPlayer(name);
 				game = gameOpt.get();

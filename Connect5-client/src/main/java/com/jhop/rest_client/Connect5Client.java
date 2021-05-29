@@ -2,11 +2,9 @@ package com.jhop.rest_client;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -14,10 +12,18 @@ import java.util.Scanner;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/**
+ * This is a simple client for connecting the the REST api service and playing
+ * connect 5
+ * 
+ * @author jhopper
+ *
+ */
 public class Connect5Client {
 
+	private static final String SERVER_URL = "http://localhost:8080/";
 	private static final int POLL_RATE = 500;
-	private static final String FINNISHED = "finnished";
+	private static final String FINISHED = "finished";
 	private static final String ID = "id";
 	private static final String PLAYER2 = "player2";
 	private static final String PLAYER1 = "player1";
@@ -27,6 +33,12 @@ public class Connect5Client {
 	String gameID = null;
 	Scanner scanner = null;
 
+	/**
+	 * This is the main function, which actually plays the game. The user can play
+	 * as many games as they like
+	 * 
+	 * @throws IOException
+	 */
 	public void play() throws IOException {
 
 		scanner = new Scanner(System.in);
@@ -47,10 +59,10 @@ public class Connect5Client {
 						String.format("Player1:%s vs Player2: %s", game.getString(PLAYER1), game.getString(PLAYER2)));
 
 				// while game not over
-				while (!game.getBoolean(FINNISHED)) {
+				while (!game.getBoolean(FINISHED)) {
 					game = waitMyTurn();
 					printGame(game);
-					if (!game.getBoolean(FINNISHED)) {
+					if (!game.getBoolean(FINISHED)) {
 						makeAMove();
 					}
 					game = getGameState(gameID);
@@ -62,39 +74,36 @@ public class Connect5Client {
 			System.out.println(String.format("Sorry to see you go %s", name));
 		} finally {
 			scanner.close();
-			
-			//quit the game even if we CtlBreak
-				
+			// quit the game even if we CtlBreak
+			quitGame();
 		}
 
-		// TODO quit the game
-		// TODO just leave game
+		// TODO Make message different if the other guy quits than if you win.
 		// TODO more unit tests especially for client
 		// TODO tidy up and comment
 		// TODO write up a document
-
 
 		System.out.println("Thanks for playing");
 
 	}
 
-	/*
-	 * Returns the game as a JSON String This also sets the name
+	/**
+	 * Start a new game. This function asks the user for their name, and then starts
+	 * a game in that name It will re-request the name if that name is already in use.
 	 */
-	public JSONObject startGame() throws IOException {
+	JSONObject startGame() throws IOException {
 
 		JSONObject game = null;
 		while (game == null) {
 
 			if (name == null) {
-				// if they already have a name, just re-use it
+				// if they already have a name, from a previous game, just re-use it
 				name = getNameFromUser();
 			}
 			ConnectionResult result = getREST("startGame?name=" + name);
 
 			if (result.getHttpCode() == 200) {
-
-				// TODO validate the game
+				// TODO validate the game is a real game, with the correct format
 				game = new JSONObject(result.getHttpResponse());
 
 			} else if (result.getHttpCode() == 403) {
@@ -111,6 +120,21 @@ public class Connect5Client {
 		return game;
 	}
 
+	/**
+	 * The user has decided to quit the game, so do that
+	 */
+	void quitGame() throws IOException {
+		deleteREST("Game/" + gameID + "?name=" + name);
+		// we are quitting dont really care about the response
+	}
+
+
+	/**
+	 * Ask the user for their name.  
+	 * Using this as a small function enables mocking in unit tests
+	 * 
+	 * @return
+	 */
 	String getNameFromUser() {
 		System.out.println("What is your name?");
 		String newName = scanner.nextLine();
@@ -119,6 +143,12 @@ public class Connect5Client {
 		return newName;
 	}
 
+	/**
+	 * Ask the user if they want to play again
+	 * 
+	 * Using this in a small function enables mocking in unit tests
+	 * @return
+	 */
 	boolean wantToContinue() {
 		System.out.println("Play Again? (Y/N)");
 
@@ -127,7 +157,16 @@ public class Connect5Client {
 		return answer.equalsIgnoreCase("y");
 	}
 
-	private JSONObject waitForOponent(JSONObject game) throws IOException {
+	/**
+	 * After the user has created the game, they need to wait for an oponent
+	 * 
+	 * This polls the server to wait for someone to play against
+	 * 
+	 * @param game
+	 * @return
+	 * @throws IOException
+	 */
+	JSONObject waitForOponent(JSONObject game) throws IOException {
 		JSONObject newGame = game;
 
 		System.out.print(String.format("Waiting for an Oponent"));
@@ -141,7 +180,6 @@ public class Connect5Client {
 				e.printStackTrace();
 			}
 			newGame = getGameState(gameID);
-
 		}
 
 		System.out.println();
@@ -150,10 +188,17 @@ public class Connect5Client {
 		return newGame;
 	}
 
-	private JSONObject waitMyTurn() throws IOException {
+	/**
+	 * After we have made a move, we need to wait for the other player to make a move
+	 * This polls the server, and loops until the other player plays
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	JSONObject waitMyTurn() throws IOException {
 		JSONObject newGame = getGameState(gameID);
 		System.out.print(String.format("Waiting for %s to move", newGame.getString(TURN)));
-		while (!name.equals(newGame.getString(TURN))) {
+		while (!name.equals(newGame.getString(TURN)) && !newGame.getBoolean(FINISHED)) {
 			System.out.print(".");
 			// A busy poll isnt great, but it will do for now.
 			try {
@@ -169,19 +214,30 @@ public class Connect5Client {
 		return newGame;
 	}
 
-	private void makeAMove() throws IOException, QuitException {
+	/**
+	 * Ask the user for the move, and make that move on the server
+	 * 
+	 * It loops until the user makes a valid move.
+	 * 
+	 * @throws IOException
+	 * @throws QuitException
+	 */
+	void makeAMove() throws IOException, QuitException {
 		Boolean allowed = false;
+		
+		//Loop until the user makes a move that is accepted
 		while (!allowed) {
-
 			System.out.print(String.format("It’s your turn %s, please enter column (1-9) (q to quit):", name));
 
 			// TODO input validation
 			String column = scanner.next();
 
+			//user decides to quit
 			if (column.equals("q")) {
 				throw new QuitException();
 			}
 
+			//TODO object validation
 			JSONObject move = new JSONObject();
 			move.put("player", name);
 			move.put("column", Integer.valueOf(column));
@@ -194,13 +250,12 @@ public class Connect5Client {
 				System.out.println("Move Not allowed:" + moveResult.getString("errorReason"));
 			}
 		}
-
 	}
 
-	/*
+	/**
 	 * Returns the game as a JSON String
 	 */
-	public JSONObject getGameState(String gameID) throws IOException {
+	JSONObject getGameState(String gameID) throws IOException {
 
 		ConnectionResult result = getREST("Game/" + gameID);
 
@@ -208,7 +263,6 @@ public class Connect5Client {
 
 			JSONObject game = new JSONObject(result.getHttpResponse());
 			// TODO validate the game
-
 			debug("getGame:" + game.toString());
 			return game;
 		}
@@ -217,8 +271,15 @@ public class Connect5Client {
 		return null;
 	}
 
-	protected ConnectionResult getREST(String request) throws MalformedURLException, IOException {
-		HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8080/" + request).openConnection();
+	/**
+	 * This function does a GET request to the server, and wraps up the 
+	 * @param request
+	 * @return
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 */
+	ConnectionResult getREST(String request) throws MalformedURLException, IOException {
+		HttpURLConnection connection = (HttpURLConnection) new URL(SERVER_URL + request).openConnection();
 		connection.setRequestMethod("GET");
 
 		// TODO handle host not responding
@@ -239,8 +300,17 @@ public class Connect5Client {
 
 	}
 
-	protected ConnectionResult postREST(String request, JSONObject body) throws MalformedURLException, IOException {
-		HttpURLConnection connection = (HttpURLConnection) new URL("http://localhost:8080/" + request).openConnection();
+	/**
+	 * This does a POST request to the Server
+	 * 
+	 * @param request
+	 * @param body
+	 * @return
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 */
+	ConnectionResult postREST(String request, JSONObject body) throws MalformedURLException, IOException {
+		HttpURLConnection connection = (HttpURLConnection) new URL(SERVER_URL + request).openConnection();
 		connection.setRequestMethod("POST");
 		connection.setRequestProperty("Content-Type", "application/json; utf-8");
 
@@ -254,17 +324,44 @@ public class Connect5Client {
 		int responseCode = connection.getResponseCode();
 		String response = "";
 
-		if (responseCode == 200) {
-			Scanner input = new Scanner(connection.getInputStream());
-			while (input.hasNextLine()) {
-				response += input.nextLine();
-			}
-			input.close();
+		Scanner input = new Scanner(connection.getInputStream());
+		while (input.hasNextLine()) {
+			response += input.nextLine();
 		}
+		input.close();
 
 		return new ConnectionResult(responseCode, response);
 	}
 
+	/**
+	 * This does a DELETE request to the server
+	 * @param request
+	 * @return
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 */
+	ConnectionResult deleteREST(String request) throws MalformedURLException, IOException {
+		HttpURLConnection connection = (HttpURLConnection) new URL(SERVER_URL + request).openConnection();
+		connection.setRequestMethod("DELETE");
+		connection.setRequestProperty("Content-Type", "application/json; utf-8");
+
+		int responseCode = connection.getResponseCode();
+		String response = "";
+
+		Scanner input = new Scanner(connection.getInputStream());
+		while (input.hasNextLine()) {
+			response += input.nextLine();
+		}
+		input.close();
+
+		return new ConnectionResult(responseCode, response);
+	}
+
+	/**
+	 * Print out the state of the game, using ascii
+	 * @param game
+	 * @throws IOException
+	 */
 	void printGame(JSONObject game) throws IOException {
 		System.out.println();
 		System.out.println(String.format(" %s (X) vs %s (O)", game.getString(PLAYER1), game.getString(PLAYER2)));
@@ -284,6 +381,10 @@ public class Connect5Client {
 		}
 	}
 
+	/**
+	 * Print out the rows and columns of the playing board.
+	 * @param game
+	 */
 	void printBoard(JSONObject game) {
 		JSONArray board = game.getJSONArray("board");
 		List<Object> columns = board.toList();
@@ -303,12 +404,20 @@ public class Connect5Client {
 					break;
 				}
 
-				System.out.print("[ " + disk + " ] ");
+				System.out.print("[" + disk + "]");
 			}
 			System.out.println();
 		}
 	}
 
+	
+	/**
+	 * This is a small debugging function, for logging out debug log.
+	 * 
+	 * I could use some sort of logging system, like log4j, but that seems excessive for this challenge
+	 * 
+	 * @param msg
+	 */
 	private void debug(String msg) {
 		// System.out.println(msg);
 	}

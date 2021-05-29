@@ -81,7 +81,7 @@ public class GameController {
 			return new MoveResult(false, "Invalid GameID");
 		}
 		
-		if(game.isFinnished()) {
+		if(game.isFinished()) {
 			return new MoveResult(false, "Games Over");
 		}
 		
