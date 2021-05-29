@@ -55,7 +55,7 @@ public class Connect5ClientTest
 	@Test
 	public void printBoard() {
 		
-		String jsonString = "{\"player1\":\"tom\",\"player2\":null,\"board\":[[1,0,0,0,0,2],[2,0,0,0,0,1],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],\"turn\":null,\"id\":\"39d8c302-cfaa-4bcd-9b27-47587dc0bca4\",\"started\":false,\"finished\":false}";
+		String jsonString = "{\"player1\":\"jhop\",\"player2\":null,\"board\":[[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],\"turn\":null,\"winner\":0,\"id\":\"8cfa588c-5701-4c91-9093-aaedec63e817\",\"started\":false,\"finished\":false}\r\n}";
 		JSONObject game = new JSONObject(jsonString);
 		
 		client.printBoard(game);

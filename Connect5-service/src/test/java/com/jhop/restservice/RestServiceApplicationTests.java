@@ -43,6 +43,7 @@ class RestServiceApplicationTests {
 				.andExpect(jsonPath("$.started", is(false))).andReturn();
 
 		String result1 = call1.getResponse().getContentAsString();
+		System.out.println(result1);
 		// now get the id out of result1, and see that it is what we need.
 
 		mvc.perform(MockMvcRequestBuilders.get("/startGame?name=shop").contentType(MediaType.APPLICATION_JSON))

@@ -20,16 +20,41 @@ public class GameTest {
 	}
 
 	@Test
-	void testPlayColumn() {
+	void testAddPlayer() {
 
 		Game game = new Game("tim");
 
 		// it isnt started yet, there is only one player
 		assertFalse(game.isStarted());
-
-		assertFalse(game.addPlayer("tim"));
-
+		
+		assertTrue(game.hasPlayer("tim"));
+		assertFalse(game.hasPlayer("tam"));
+		
 		// tim cant play twice
+		assertFalse(game.addPlayer("tim"));
+		assertFalse(game.isStarted());
+		assertTrue(game.addPlayer("tam"));
+		// now we have two players
+		assertTrue(game.isStarted());
+		
+		
+
+		assertTrue(game.hasPlayer("tim"));
+		assertTrue(game.hasPlayer("tam"));
+		
+		
+		//Cant add a third player
+		assertFalse(game.addPlayer("ben"));
+		
+	}
+	
+	
+	@Test
+	void testPlayColumn() {
+
+		Game game = new Game("tim");
+
+		// it isnt started yet, there is only one player
 		assertFalse(game.isStarted());
 
 		assertTrue(game.addPlayer("tam"));

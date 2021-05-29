@@ -6,6 +6,14 @@ import java.util.UUID;
 
 import lombok.Getter;
 
+
+/**
+ * This is the Connect5 Game.  
+ * This is the state of the game, and the logic to make it playble
+ * 
+ * @author jhopper
+ *
+ */
 public class Game {
 
 	private UUID gameID;
@@ -18,6 +26,7 @@ public class Game {
 	private static int COLUMNS = 9;
 	private static int ROWS = 6;
 
+	@Getter
 	Integer[][] board = new Integer[COLUMNS][ROWS];
 
 	@Getter
@@ -27,6 +36,11 @@ public class Game {
 	@Getter
 	Integer winner = 0;
 
+	
+	/**
+	 * Construct a new game, and give it a random ID
+	 * @param name
+	 */
 	public Game(String name) {
 		gameID = java.util.UUID.randomUUID();
 		player1 = name;
@@ -37,6 +51,14 @@ public class Game {
 		}
 	}
 
+	/**
+	 * Add a player to the game.  This is always player2, because the constructor sets player1
+	 * 
+	 * Once a second player is added, the game starts
+	 * 
+	 * @param name
+	 * @return false if the player is already playing, or the game is full
+	 */
 	public boolean addPlayer(String name) {
 		if (player2 != null || player1.equals(name)) {
 			// the game is already full
@@ -62,19 +84,21 @@ public class Game {
 	}
 
 	public boolean isStarted() {
+		//Actually we could just check player2, but this is more readable
 		return (player1 != null & player2 != null);
 	}
 
+	/**
+	 * Is this player one of the two players on this game?
+	 * @param name
+	 * @return
+	 */
 	public boolean hasPlayer(String name) {
 		return (name.equals(player1) || name.equals(player2));
 	}
 
 	public boolean isFinished() {
 		return winner != 0;
-	}
-
-	public Integer[][] getBoard() {
-		return board;
 	}
 
 	/**
@@ -132,10 +156,10 @@ public class Game {
 	}
 
 	/**
-	 * This runs through the game to see if anyone won A winner is someone with 5 in
-	 * a row.
+	 * This runs through the game to see if anyone won.
+	 *  A winner is someone with 5 in a row. up, across, or diagonal
 	 * 
-	 * @return
+	 * @return The winner.  Returns 0 if there is no winner
 	 */
 	Integer getWinner(Integer[][] aBoard) {
 		Integer winner = 0;
@@ -241,7 +265,7 @@ public class Game {
 				//This is the possible start of the row
 				Integer disk = aBoard[x][y];
 				if(disk==0) { 
-				//its an empty slot, dont continue
+				//its an empty slot, move to next slot
 					continue;
 				}
 				
@@ -265,10 +289,10 @@ public class Game {
 
 	/**
 	 * This looks for a winner in Diagonals going down
-	 * Marking diagonals is harder. Up lines can only start in:
+	 * Marking diagonals is harder. Down lines can only start in:
 	 * 
 	 *  1) columns up to Columns-inARow 
-	 *  2) rows up from inARow
+	 *  2) rows up from inARow-1;
 	 * 
 	 * @param aBoard
 	 * @param inARow
@@ -281,7 +305,7 @@ public class Game {
 				//This is the possible start of the row
 				Integer disk = aBoard[x][y];
 				if(disk==0) { 
-				//its an empty slot, dont continue
+				//its an empty slot, move to next slot
 					continue;
 				}
 
@@ -299,7 +323,7 @@ public class Game {
 				}
 			}
 		}
-		// noone won
+		// no one won
 		return 0;
 	}
 
@@ -316,8 +340,5 @@ public class Game {
 			winner = 1;
 		}		
 	}
-	
-	
-	//TODO	add function to mark the game
 
 }

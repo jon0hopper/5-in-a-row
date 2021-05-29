@@ -42,6 +42,26 @@ public class GameServerTest {
 		
 		//Third player joins the game
 		assertNotEquals(gameServer.startGame("dhop").getID(),game.getID());
+		
+		//now that we have some games, test we can fetch it
+		Game fetchGame = gameServer.getGame(game.getID());
+		assertEquals(game.getID(),fetchGame.getID());
 	
 	}
+	
+	
+	@Test
+	void testQuits() {
+		
+		//Add the first game
+		Game game = gameServer.startGame("jhop");
+		assertTrue(game != null);
+		
+		game.quit("jhop");
+		
+		//A new player joins the game, but its already finished
+		assertNotEquals(gameServer.startGame("shop").getID(),game.getID());
+		
+	}
+	
 }

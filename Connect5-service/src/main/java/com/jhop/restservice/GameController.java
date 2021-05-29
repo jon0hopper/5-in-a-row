@@ -1,7 +1,5 @@
 package com.jhop.restservice;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
@@ -9,7 +7,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +23,7 @@ public class GameController {
 		this.gameServer = gameServer;
 	}
 	
-	/*
+	/**
 	 *  startGame (send name)
 	 *  
 	 *  This will return the game id.  This is either a new game, or a game with an opponent.
@@ -47,7 +44,7 @@ public class GameController {
 	}
 	
 	
-	/*
+	/**
 	 * This just returns the state of the game.  This will return the state of the game board
 	 * It will also return a status.  This can be 
 	 * 
@@ -62,14 +59,13 @@ public class GameController {
 		return gameServer.getGame(gameID);
 	}
 	
-	/*
+	/**
 	 *  makeMove
 	 *  
 	 *  This will send a move.  This will return
 	 *  Not_Your_Turn
 	 *  OK
 	 *  Invalid:<reason>
-	 *  
 	 *  
 	 */
 	@PostMapping("/Game/{gameID}")
@@ -100,7 +96,7 @@ public class GameController {
 		return result;
 	}
 	
-	/*
+	/**
 	 *  quit
 	 *  
 	 *  This leaves the game.  If the game was not won, then the other player wins by default
@@ -122,11 +118,4 @@ public class GameController {
 		
 		game.quit(name);
 	}
-
-	
-	
-	//  Considerations:
-	//Polling isnt great, but it will handle well if there are lots of clients.  it scales.
-	
-	
 }
