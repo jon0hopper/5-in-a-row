@@ -116,5 +116,128 @@ public class GameTest {
 		Integer winner = game.getWinner(board);
 		assertEquals(2,winner);
 	}
+
+	
+	@Test
+	void testWinnerUpDiagonal() {
+		//Diagonal starting at 0,0
+		Integer[][] board = { { 1,0,0,0,0,0},{ 0,1,0,0,0,0},{ 0,0,1,0,0,0},{ 0,0,0,1,0,0},{ 0,0,0,0,1,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0} };
+
+		Game game = new Game("tim");
+
+		Integer winner = game.getWinner(board);
+		assertEquals(1,winner);
+	}
+
+	@Test
+	void testWinnerUpDiagonal1() {
+		//Diagonal starting at 0,0
+		Integer[][] board = { { 1,0,0,0,0,0},{ 0,1,0,0,0,0},{ 0,0,2,0,0,0},{ 0,0,0,1,0,0},{ 0,0,0,0,1,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0} };
+
+		Game game = new Game("tim");
+
+		Integer winner = game.getWinner(board);
+		assertEquals(0,winner);
+	}
+	
+	@Test
+	void testWinnerUpDiagonal2() {
+		//Diagonal starting at 0,1
+		Integer[][] board = { { 1,2,0,0,0,0},{ 0,2,2,0,0,0},{ 0,0,1,2,0,0},{ 0,0,0,1,2,0},{ 0,0,0,0,1,2},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0} };
+
+		Game game = new Game("tim");
+
+		Integer winner = game.getWinner(board);
+		assertEquals(2,winner);
+	}
+	
+	@Test
+	void testWinnerUpDiagonal3() {
+		//Diagonal starting at 4,1
+		Integer[][] board = { { 1,2,0,0,0,0},{ 0,2,1,0,0,0},{ 0,0,1,2,0,0},{ 0,0,0,1,2,0},{ 0,2,0,0,1,2},{ 0,0,2,0,0,0},{ 0,0,0,2,0,0},{ 0,0,0,0,2,0},{ 0,0,0,0,0,2} };
+
+		Game game = new Game("tim");
+
+		Integer winner = game.getWinner(board);
+		assertEquals(2,winner);
+	}	
+
+	@Test
+	void testWinnerUpDiagonal4() {
+		//Diagonal starting at 4,0
+		Integer[][] board = { { 1,2,0,0,0,0},{ 0,2,1,0,0,0},{ 0,0,1,2,0,0},{ 0,0,0,1,2,0},{ 1,1,0,0,1,2},{ 0,1,2,0,0,0},{ 0,0,1,2,0,0},{ 0,0,0,1,2,0},{ 0,0,0,0,1,2} };
+
+		Game game = new Game("tim");
+
+		Integer winner = game.getWinner(board);
+		assertEquals(1,winner);
+	}	
+
+
+
+	@Test
+	void testWinnerDownDiagonal() {
+		//Diagonal starting at 0,4
+		Integer[][] board = { { 0,0,0,0,1,0},{ 0,0,0,1,0,0},{ 0,0,1,1,0,0},{ 0,1,1,0,0,0},{ 1,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0} };
+
+		Game game = new Game("tim");
+
+		Integer winner = game.getWinner(board);
+		assertEquals(1,winner);
+	}
+
+	@Test
+	void testWinnerDownDiagonal1() {
+		//Diagonal starting at 0,4
+		Integer[][] board = { { 0,0,0,0,1,0},{ 0,0,0,1,0,0},{ 0,0,2,1,0,0},{ 0,1,1,0,0,0},{ 1,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0} };
+
+		Game game = new Game("tim");
+
+		Integer winner = game.getWinner(board);
+		assertEquals(0,winner);
+	}
+	@Test
+	void testWinnerDownDiagonal2() {
+		//Diagonal starting at 0,5
+		Integer[][] board = { { 0,0,0,0,1,2},{ 0,0,0,2,2,0},{ 0,0,0,2,0,0},{ 0,0,2,0,0,0},{ 0,2,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0},{ 0,0,0,0,0,0} };
+
+		Game game = new Game("tim");
+
+		Integer winner = game.getWinner(board);
+		assertEquals(2,winner);
+	}
+	
+	@Test
+	void testWinnerDownDiagonal3() {
+		//Diagonal starting at 4,5
+		Integer[][] board = { { 0,0,0,0,1,1},{ 0,0,0,2,2,0},{ 0,0,0,2,0,0},{ 0,0,2,0,0,0},{ 0,2,0,0,0,2},{ 0,0,2,0,2,0},{ 0,0,0,2,0,0},{ 0,0,2,0,2,0},{ 0,2,0,0,0,0} };
+
+		Game game = new Game("tim");
+
+		Integer winner = game.getWinner(board);
+		assertEquals(2,winner);
+	}
+
+	@Test
+	void testWinnerDownDiagonal4() {
+		//Diagonal starting at 4,4
+		Integer[][] board = { { 0,0,0,0,1,1},{ 0,0,0,2,2,0},{ 0,0,0,2,0,0},{ 0,0,2,0,0,0},{ 0,2,0,0,1,0},{ 0,0,1,1,0,0},{ 0,0,1,2,0,0},{ 0,1,0,0,2,0},{ 1,0,0,0,0,0} };
+
+		Game game = new Game("tim");
+
+		Integer winner = game.getWinner(board);
+		assertEquals(1,winner);
+	}
+
+	@Test
+	void testWinnerDownDiagonal5() {
+		//Diagonal starting at 4,4, one short
+		Integer[][] board = { { 0,0,0,0,1,1},{ 0,0,0,2,2,0},{ 0,0,0,2,0,0},{ 0,0,2,0,0,0},{ 0,2,0,0,1,0},{ 0,0,1,1,0,0},{ 0,0,1,2,0,0},{ 0,1,0,0,2,0},{ 0,0,0,0,0,0} };
+
+		Game game = new Game("tim");
+
+		Integer winner = game.getWinner(board);
+		assertEquals(0,winner);
+	}
 	
 }

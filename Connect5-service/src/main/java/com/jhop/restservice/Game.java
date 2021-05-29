@@ -23,7 +23,7 @@ public class Game {
 	@Getter
 	private String turn = null;
 
-	//Player 0 ie no winner yet
+	// Player 0 ie no winner yet
 	@Getter
 	Integer winner = 0;
 
@@ -123,8 +123,8 @@ public class Game {
 			} else {
 				turn = player1;
 			}
-			
-			//mark the game
+
+			// mark the game
 			winner = getWinner(board);
 		}
 
@@ -142,6 +142,36 @@ public class Game {
 
 		int inARow = 5;
 		// Rows
+		winner = markRows(aBoard, inARow);
+		if (winner != 0) {
+			return winner;
+		}
+		// Columns
+		winner = markColumns(aBoard, inARow);
+		if (winner != 0) {
+			return winner;
+		}
+		// diagonals
+		winner = markUpDiagonals(aBoard, inARow);
+		if (winner != 0) {
+			return winner;
+		}
+
+		// down lines
+		winner = markDownDiagonals(aBoard, inARow);
+
+		return winner;
+
+	}
+
+	/**
+	 * This looks for a winner in rows
+	 * 
+	 * @param aBoard
+	 * @param inARow the number needed in a row to win
+	 * @return
+	 */
+	private Integer markRows(Integer[][] aBoard, int inARow) {
 		Integer last = 0;
 		Integer matches = 0;
 		for (int y = 0; y < ROWS; y++) {
@@ -149,7 +179,7 @@ public class Game {
 				if (aBoard[x][y] == last && last != 0) {
 					matches++;
 				} else {
-					//there is always 1 matching
+					// there is always 1 matching
 					matches = 1;
 				}
 				last = aBoard[x][y];
@@ -159,16 +189,26 @@ public class Game {
 				}
 			}
 		}
+		// noone won
+		return 0;
+	}
 
-		// Columns
-		last = 0;
-		matches = 0;
+	/**
+	 * This looks for a winner in Columns
+	 * 
+	 * @param aBoard
+	 * @param inARow
+	 * @return
+	 */
+	private Integer markColumns(Integer[][] aBoard, int inARow) {
+		Integer last = 0;
+		Integer matches = 0;
 		for (int x = 0; x < COLUMNS; x++) {
 			for (int y = 0; y < ROWS; y++) {
 				if (aBoard[x][y] == last && last != 0) {
 					matches++;
 				} else {
-					//there is always 1 matching
+					// there is always 1 matching
 					matches = 1;
 				}
 				last = aBoard[x][y];
@@ -178,15 +218,106 @@ public class Game {
 				}
 			}
 		}
-			
-		// diagonals
-
-		
-		//Nooone one yet
-		return winner;
-
+		// noone won
+		return 0;
 	}
 
-//TODO	add function to mark the game
+	
+	/**
+	 * This looks for a winner in Diagonals going up
+	 * Marking diagonals is harder. Up lines can only start in:
+	 * 
+	 *  1) columns up to COLUMNS-inARow 
+	 *  2) rows up to Rows-inARow
+	 * 
+	 * @param aBoard
+	 * @param inARow
+	 * @return
+	 */
+	private Integer markUpDiagonals(Integer[][] aBoard, int inARow) {
+		
+		for (int x = 0; x <= COLUMNS-inARow+1; x++) {
+			for (int y = 0; y <= ROWS-inARow; y++) {
+				//This is the possible start of the row
+				Integer disk = aBoard[x][y];
+				if(disk==0) { 
+				//its an empty slot, dont continue
+					continue;
+				}
+				
+				boolean won = true;
+				for(int n = 1; n<inARow; n++) {
+					if(disk!=aBoard[x+n][y+n]) 
+					{ 
+						//didnt match, dont continue
+						won = false;
+						break;
+					}
+				}
+				if(won) {
+					return disk;
+				}
+			}
+		}
+		// noone won
+		return 0;
+	}
+
+	/**
+	 * This looks for a winner in Diagonals going down
+	 * Marking diagonals is harder. Up lines can only start in:
+	 * 
+	 *  1) columns up to Columns-inARow 
+	 *  2) rows up from inARow
+	 * 
+	 * @param aBoard
+	 * @param inARow
+	 * @return
+	 */
+	private Integer markDownDiagonals(Integer[][] aBoard, int inARow) {
+		
+		for (int x = 0; x <= COLUMNS-inARow; x++) {
+			for (int y = inARow-1; y < ROWS; y++) {
+				//This is the possible start of the row
+				Integer disk = aBoard[x][y];
+				if(disk==0) { 
+				//its an empty slot, dont continue
+					continue;
+				}
+
+				boolean won = true;
+				for(int n = 1; n<inARow; n++) {
+					if(disk!=aBoard[x+n][y-n]) 
+					{ 
+						//didnt match, dont continue
+						won=false;
+						break;
+					}
+				}
+				if(won) {
+					return disk;
+				}
+			}
+		}
+		// noone won
+		return 0;
+	}
+
+	/**
+	 * This player wants to quit the game.
+	 * The other player will win.
+	 * @param name
+	 */
+	public void quit(String name) {
+		if(player1.equals(name)) {
+			winner = 2;
+		}
+		else if(player2.equals(name)) {
+			winner = 1;
+		}		
+	}
+	
+	
+	//TODO	add function to mark the game
 
 }

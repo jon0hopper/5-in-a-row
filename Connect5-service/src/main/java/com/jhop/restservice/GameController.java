@@ -2,7 +2,10 @@ package com.jhop.restservice;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,11 +36,13 @@ public class GameController {
 	@GetMapping("/startGame")
 	public Game startGame(@RequestParam(value = "name", defaultValue = "Player1") String name) {
 		
+		//TODO look at a better way to handle identity.  use a session or BasicAuthentication
 		Game game = gameServer.startGame(name);
 		if(game==null) {
 			throw new ResponseStatusException(
 			          HttpStatus.FORBIDDEN, "Name is in use");
-		}
+		}	
+		
 		return game;
 	}
 	
@@ -68,7 +73,7 @@ public class GameController {
 	 *  
 	 */
 	@PostMapping("/Game/{gameID}")
-	public MoveResult makeMove(@PathVariable String gameID,@RequestBody GameMove newMove) {
+	public MoveResult makeMove(@PathVariable String gameID,@RequestBody GameMove newMove,HttpServletRequest request) {
 		
 		//check the move is OK
 		Game game = gameServer.getGame(gameID);
@@ -99,8 +104,24 @@ public class GameController {
 	 *  quit
 	 *  
 	 *  This leaves the game.  If the game was not won, then the other player wins by default
-	 *  
+	 *  This relies on a user passing in their name
+	 *  This doesn't actually remove the game, so maybe DELETE isn't strictly correct, but it will work
 	 */
+	@DeleteMapping("/Game/{gameID}")
+	public void quitGame(@PathVariable String gameID,@RequestParam(value = "name") String name) {
+		
+		Game game = gameServer.getGame(gameID);
+		if(game==null) {
+			throw new ResponseStatusException(
+			          HttpStatus.FORBIDDEN, "Invalid Game ID");
+		}
+		if(!game.hasPlayer(name)) {
+			throw new ResponseStatusException(
+			          HttpStatus.FORBIDDEN, "Not your game");
+		}
+		
+		game.quit(name);
+	}
 
 	
 	
