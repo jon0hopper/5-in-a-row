@@ -1,4 +1,4 @@
-package com.jhop.restservice;
+package com.jhop.restservice.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,10 +13,9 @@ public class MoveResult {
 	@Setter
 	@NonNull
 	private Boolean allowed;
-	
+
 	@Setter
 	@Getter
 	private String errorReason;
-	
 
 }

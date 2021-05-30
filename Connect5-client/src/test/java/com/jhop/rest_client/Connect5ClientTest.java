@@ -1,17 +1,18 @@
 package com.jhop.rest_client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Scanner;
 
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 /**
  * Unit test for Connect5Client
@@ -19,19 +20,68 @@ import org.mockito.Mockito;
 public class Connect5ClientTest 
 {
 	
+  
+	Scanner mockScanner;
+	
 	Connect5Client client;
+
+	private AutoCloseable mockitoCloseable;
+	
 	
 	@BeforeEach
 	void Setup() {
+		mockitoCloseable = MockitoAnnotations.openMocks(this);
 		client = Mockito.spy(new Connect5Client());	
-	}
-	
-	@AfterEach
-	void TearDown() {
+		mockScanner = new Scanner(System.in);
 		
 	}
 	
-    
+	@AfterEach
+	void TearDown() throws Exception {
+		mockitoCloseable.close();
+		
+	}
+
+	@Test
+	/**
+	 * Play a bit of a game
+	 */
+	public void testPlay() throws IOException, QuitException {
+		
+		
+		String jsonGame = "{\"player1\":\"jhop\",\"player2\":shop,\"board\":[[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],\"turn\":null,\"winner\":0,\"id\":\"f9965a4a-87c6-41d9-ac99-463c539b1738\",\"started\":false,\"finished\":false}";
+		
+		JSONObject game = new JSONObject(jsonGame); 
+		doReturn(game).when(client).startGame();
+		
+		//this is the game loop
+		doReturn(game).when(client).waitForOponent(any(JSONObject.class));
+		
+		doReturn(game).when(client).waitMyTurn();
+		doNothing().when(client).makeAMove();
+		doReturn(game).when(client).getGameState(anyString());
+
+		//do it twice
+		doReturn(game).when(client).waitMyTurn();
+		doNothing().when(client).makeAMove();
+		doReturn(game).when(client).getGameState(anyString());
+		
+		//this is a finished game
+		jsonGame = "{\"player1\":\"jhop\",\"player2\":shop,\"board\":[[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],\"turn\":null,\"winner\":1,\"id\":\"f9965a4a-87c6-41d9-ac99-463c539b1738\",\"started\":false,\"finished\":true}";
+		game = new JSONObject(jsonGame); 
+
+		doReturn(game).when(client).waitMyTurn();
+		doReturn(game).when(client).getGameState(anyString());
+		
+		doReturn(false).when(client).wantToContinue();
+		
+		doNothing().when(client).quitGame();
+		
+		client.play(mockScanner);
+	}
+	
+	
+	
 	@Test
     public void testStartGame() throws MalformedURLException, IOException
     {
@@ -47,8 +97,6 @@ public class Connect5ClientTest
 		JSONObject game = client.startGame();
 		
 		assertEquals(gameID,game.getString("id"));
-		//  TODO update the response 
-		//assertEquals("jhop",game.getString("player1"));
 		
     }
 	

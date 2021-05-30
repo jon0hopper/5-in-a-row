@@ -5,10 +5,13 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -39,9 +42,9 @@ public class Connect5Client {
 	 * 
 	 * @throws IOException
 	 */
-	public void play() throws IOException {
+	public void play(Scanner cin) throws IOException {
 
-		scanner = new Scanner(System.in);
+		scanner = cin;
 
 		System.out.println("Welcome to 5-in-a-Row");
 
@@ -78,18 +81,14 @@ public class Connect5Client {
 			quitGame();
 		}
 
-		// TODO Make message different if the other guy quits than if you win.
-		// TODO more unit tests especially for client
-		// TODO tidy up and comment
-		// TODO write up a document
-
 		System.out.println("Thanks for playing");
 
 	}
 
 	/**
 	 * Start a new game. This function asks the user for their name, and then starts
-	 * a game in that name It will re-request the name if that name is already in use.
+	 * a game in that name It will re-request the name if that name is already in
+	 * use.
 	 */
 	JSONObject startGame() throws IOException {
 
@@ -100,7 +99,8 @@ public class Connect5Client {
 				// if they already have a name, from a previous game, just re-use it
 				name = getNameFromUser();
 			}
-			ConnectionResult result = getREST("startGame?name=" + name);
+			ConnectionResult result = getREST(
+					"startGame?name=" + URLEncoder.encode(name, StandardCharsets.UTF_8.toString()));
 
 			if (result.getHttpCode() == 200) {
 				// TODO validate the game is a real game, with the correct format
@@ -124,14 +124,14 @@ public class Connect5Client {
 	 * The user has decided to quit the game, so do that
 	 */
 	void quitGame() throws IOException {
-		deleteREST("Game/" + gameID + "?name=" + name);
+
+		deleteREST("Game/" + gameID + "?name=" + URLEncoder.encode(name, StandardCharsets.UTF_8.toString()));
 		// we are quitting dont really care about the response
 	}
 
-
 	/**
-	 * Ask the user for their name.  
-	 * Using this as a small function enables mocking in unit tests
+	 * Ask the user for their name. Using this as a small function enables mocking
+	 * in unit tests
 	 * 
 	 * @return
 	 */
@@ -147,6 +147,7 @@ public class Connect5Client {
 	 * Ask the user if they want to play again
 	 * 
 	 * Using this in a small function enables mocking in unit tests
+	 * 
 	 * @return
 	 */
 	boolean wantToContinue() {
@@ -189,8 +190,8 @@ public class Connect5Client {
 	}
 
 	/**
-	 * After we have made a move, we need to wait for the other player to make a move
-	 * This polls the server, and loops until the other player plays
+	 * After we have made a move, we need to wait for the other player to make a
+	 * move This polls the server, and loops until the other player plays
 	 * 
 	 * @return
 	 * @throws IOException
@@ -224,20 +225,23 @@ public class Connect5Client {
 	 */
 	void makeAMove() throws IOException, QuitException {
 		Boolean allowed = false;
-		
-		//Loop until the user makes a move that is accepted
+
+		// Loop until the user makes a move that is accepted
 		while (!allowed) {
-			System.out.print(String.format("It’s your turn %s, please enter column (1-9) (q to quit):", name));
 
-			// TODO input validation
-			String column = scanner.next();
+			String column = null;
+			do {
+				System.out.print(String.format("It’s your turn %s, please enter column (1-9) (q to quit):", name));
+				column = scanner.next();
 
-			//user decides to quit
-			if (column.equals("q")) {
-				throw new QuitException();
-			}
+				// user decides to quit
+				if (column.equals("q")) {
+					throw new QuitException();
+				}
 
-			//TODO object validation
+			} while (!StringUtils.isNumeric(column) || Integer.valueOf(column) < 1 || Integer.valueOf(column) > 9);
+
+			// TODO object validation
 			JSONObject move = new JSONObject();
 			move.put("player", name);
 			move.put("column", Integer.valueOf(column));
@@ -272,7 +276,8 @@ public class Connect5Client {
 	}
 
 	/**
-	 * This function does a GET request to the server, and wraps up the 
+	 * This function does a GET request to the server, and wraps up the
+	 * 
 	 * @param request
 	 * @return
 	 * @throws MalformedURLException
@@ -335,6 +340,7 @@ public class Connect5Client {
 
 	/**
 	 * This does a DELETE request to the server
+	 * 
 	 * @param request
 	 * @return
 	 * @throws MalformedURLException
@@ -359,6 +365,7 @@ public class Connect5Client {
 
 	/**
 	 * Print out the state of the game, using ascii
+	 * 
 	 * @param game
 	 * @throws IOException
 	 */
@@ -383,6 +390,7 @@ public class Connect5Client {
 
 	/**
 	 * Print out the rows and columns of the playing board.
+	 * 
 	 * @param game
 	 */
 	void printBoard(JSONObject game) {
@@ -410,11 +418,11 @@ public class Connect5Client {
 		}
 	}
 
-	
 	/**
 	 * This is a small debugging function, for logging out debug log.
 	 * 
-	 * I could use some sort of logging system, like log4j, but that seems excessive for this challenge
+	 * I could use some sort of logging system, like log4j, but that seems excessive
+	 * for this challenge
 	 * 
 	 * @param msg
 	 */
@@ -425,7 +433,7 @@ public class Connect5Client {
 	public static void main(String[] args) throws IOException {
 		Connect5Client myApp = new Connect5Client();
 		try {
-			myApp.play();
+			myApp.play(new Scanner(System.in));
 		} catch (java.net.ConnectException e) {
 			System.out.println("Unable to connect.  Maybe the Server needs to be started");
 		}

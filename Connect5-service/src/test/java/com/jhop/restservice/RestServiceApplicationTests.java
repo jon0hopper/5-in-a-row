@@ -7,15 +7,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.JsonPathResultMatchers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -51,6 +47,10 @@ class RestServiceApplicationTests {
 				.andExpect(jsonPath("$.id").exists()).andExpect(jsonPath("$.finished", is(false)))
 				.andExpect(jsonPath("$.started", is(true)));
 
+		// now start another game, with the same name.
+		mvc.perform(MockMvcRequestBuilders.get("/startGame?name=shop").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isForbidden());
+
 	}
 
 	@Test
@@ -74,14 +74,12 @@ class RestServiceApplicationTests {
 
 		// Now check the two games are the same
 		assertEquals(game1.get("id"), game2.getString("id"));
-		
-		//Start the game, so that future tests work
-		mvc
-				.perform(MockMvcRequestBuilders.get("/startGame?name=brad").contentType(MediaType.APPLICATION_JSON))
+
+		// Start the game, so that future tests work
+		mvc.perform(MockMvcRequestBuilders.get("/startGame?name=brad").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.id").exists()).andExpect(jsonPath("$.finished", is(false)))
 				.andExpect(jsonPath("$.started", is(true))).andReturn();
-		
 
 	}
 
@@ -135,36 +133,48 @@ class RestServiceApplicationTests {
 		String gameID = theGame.getString("id");
 		String player = theGame.getString("turn");
 
-		String jsonMove = "{\"column\":2,\"player\":\""+player +"\" }";
+		String jsonMove = "{\"column\":2,\"player\":\"" + player + "\" }";
 
-		response = mvc.perform(MockMvcRequestBuilders.post("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON_VALUE)
-				.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8").content(jsonMove))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(jsonPath("$.allowed", is(true)))
-				.andReturn();
-
-
-		//Same player goes again, not allowed
-		response = mvc.perform(MockMvcRequestBuilders.post("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON_VALUE)
-				.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8").content(jsonMove))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(jsonPath("$.allowed", is(false)))
-				.andReturn();
-		
-		//Other Player is allowed
 		response = mvc
-				.perform(MockMvcRequestBuilders.get("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON))
+				.perform(MockMvcRequestBuilders.post("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON_VALUE)
+						.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8").content(jsonMove))
+				.andExpect(MockMvcResultMatchers.status().isOk()).andExpect(jsonPath("$.allowed", is(true)))
+				.andReturn();
+
+		// Same player goes again, not allowed
+		response = mvc
+				.perform(MockMvcRequestBuilders.post("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON_VALUE)
+						.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8").content(jsonMove))
+				.andExpect(MockMvcResultMatchers.status().isOk()).andExpect(jsonPath("$.allowed", is(false)))
+				.andReturn();
+
+		// Other Player is allowed
+		response = mvc.perform(MockMvcRequestBuilders.get("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON))
 				.andReturn();
 
 		theGame = new JSONObject(response.getResponse().getContentAsString());
 		player = theGame.getString("turn");
 
-		jsonMove = "{\"column\":2,\"player\":\""+player +"\" }";
+		jsonMove = "{\"column\":2,\"player\":\"" + player + "\" }";
 
-		response = mvc.perform(MockMvcRequestBuilders.post("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON_VALUE)
-				.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8").content(jsonMove))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(jsonPath("$.allowed", is(true)))
+		response = mvc
+				.perform(MockMvcRequestBuilders.post("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON_VALUE)
+						.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8").content(jsonMove))
+				.andExpect(MockMvcResultMatchers.status().isOk()).andExpect(jsonPath("$.allowed", is(true)))
+				.andReturn();
+
+		// test an invalid move, an invalid column
+		response = mvc.perform(MockMvcRequestBuilders.get("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON))
+				.andReturn();
+		theGame = new JSONObject(response.getResponse().getContentAsString());
+		player = theGame.getString("turn");
+
+		jsonMove = "{\"column\":20,\"player\":\"" + player + "\" }";
+
+		response = mvc
+				.perform(MockMvcRequestBuilders.post("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON_VALUE)
+						.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8").content(jsonMove))
+				.andExpect(MockMvcResultMatchers.status().isOk()).andExpect(jsonPath("$.allowed", is(false)))
 				.andReturn();
 
 	}
@@ -186,31 +196,42 @@ class RestServiceApplicationTests {
 		String gameID = theGame.getString("id");
 		String player = theGame.getString("turn");
 
-		String jsonMove = "{\"column\":2,\"player\":\""+player +"\" }";
+		String jsonMove = "{\"column\":2,\"player\":\"" + player + "\" }";
 
-		response = mvc.perform(MockMvcRequestBuilders.post("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON_VALUE)
-				.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8").content(jsonMove))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andReturn();
-
-		theGame = new JSONObject(response.getResponse().getContentAsString());
-		
-	
-		//mary quits the game
-		mvc.perform(MockMvcRequestBuilders.delete("/Game/" + gameID + "?name=mary").contentType(MediaType.APPLICATION_JSON_VALUE)
-				.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8").content(jsonMove))
-				.andExpect(MockMvcResultMatchers.status().isOk());
-
-
-		//see that the game is over
-		response = mvc.perform(MockMvcRequestBuilders.get("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON_VALUE)
-				.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8"))
-				.andExpect(MockMvcResultMatchers.status().isOk())
-				.andExpect(jsonPath("$.winner", is(2)))
-				.andExpect(jsonPath("$.finished", is(true)))				
-				.andReturn();
+		response = mvc
+				.perform(MockMvcRequestBuilders.post("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON_VALUE)
+						.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8").content(jsonMove))
+				.andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
 
 		theGame = new JSONObject(response.getResponse().getContentAsString());
+
+		// Test someone else quitting
+		mvc.perform(MockMvcRequestBuilders.delete("/Game/" + gameID + "?name=thadius")
+				.contentType(MediaType.APPLICATION_JSON_VALUE).accept(MediaType.APPLICATION_JSON)
+				.characterEncoding("UTF-8").content(jsonMove)).andExpect(MockMvcResultMatchers.status().isForbidden());
+
+		// mary quits the game
+		mvc.perform(MockMvcRequestBuilders.delete("/Game/" + gameID + "?name=mary")
+				.contentType(MediaType.APPLICATION_JSON_VALUE).accept(MediaType.APPLICATION_JSON)
+				.characterEncoding("UTF-8").content(jsonMove)).andExpect(MockMvcResultMatchers.status().isOk());
+
+		// see that the game is over
+		response = mvc
+				.perform(MockMvcRequestBuilders.get("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON_VALUE)
+						.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8"))
+				.andExpect(MockMvcResultMatchers.status().isOk()).andExpect(jsonPath("$.winner", is(2)))
+				.andExpect(jsonPath("$.finished", is(true))).andReturn();
+
+		theGame = new JSONObject(response.getResponse().getContentAsString());
+
+		// Test a move after the came is finished
+		jsonMove = "{\"column\":2,\"player\":\"" + player + "\" }";
+
+		response = mvc
+				.perform(MockMvcRequestBuilders.post("/Game/" + gameID).contentType(MediaType.APPLICATION_JSON_VALUE)
+						.accept(MediaType.APPLICATION_JSON).characterEncoding("UTF-8").content(jsonMove))
+				.andExpect(MockMvcResultMatchers.status().isOk()).andExpect(jsonPath("$.allowed", is(false)))
+				.andReturn();
 
 	}
 }

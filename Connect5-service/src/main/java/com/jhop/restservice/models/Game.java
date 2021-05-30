@@ -1,4 +1,4 @@
-package com.jhop.restservice;
+package com.jhop.restservice.models;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -6,10 +6,9 @@ import java.util.UUID;
 
 import lombok.Getter;
 
-
 /**
- * This is the Connect5 Game.  
- * This is the state of the game, and the logic to make it playble
+ * This is the Connect5 Game. This is the state of the game, and the logic to
+ * make it playable
  * 
  * @author jhopper
  *
@@ -36,9 +35,9 @@ public class Game {
 	@Getter
 	Integer winner = 0;
 
-	
 	/**
 	 * Construct a new game, and give it a random ID
+	 * 
 	 * @param name
 	 */
 	public Game(String name) {
@@ -52,7 +51,8 @@ public class Game {
 	}
 
 	/**
-	 * Add a player to the game.  This is always player2, because the constructor sets player1
+	 * Add a player to the game. This is always player2, because the constructor
+	 * sets player1
 	 * 
 	 * Once a second player is added, the game starts
 	 * 
@@ -84,12 +84,13 @@ public class Game {
 	}
 
 	public boolean isStarted() {
-		//Actually we could just check player2, but this is more readable
+		// Actually we could just check player2, but this is more readable
 		return (player1 != null & player2 != null);
 	}
 
 	/**
 	 * Is this player one of the two players on this game?
+	 * 
 	 * @param name
 	 * @return
 	 */
@@ -156,10 +157,10 @@ public class Game {
 	}
 
 	/**
-	 * This runs through the game to see if anyone won.
-	 *  A winner is someone with 5 in a row. up, across, or diagonal
+	 * This runs through the game to see if anyone won. A winner is someone with 5
+	 * in a row. up, across, or diagonal
 	 * 
-	 * @return The winner.  Returns 0 if there is no winner
+	 * @return The winner. Returns 0 if there is no winner
 	 */
 	Integer getWinner(Integer[][] aBoard) {
 		Integer winner = 0;
@@ -246,39 +247,36 @@ public class Game {
 		return 0;
 	}
 
-	
 	/**
-	 * This looks for a winner in Diagonals going up
-	 * Marking diagonals is harder. Up lines can only start in:
+	 * This looks for a winner in Diagonals going up Marking diagonals is harder. Up
+	 * lines can only start in:
 	 * 
-	 *  1) columns up to COLUMNS-inARow 
-	 *  2) rows up to Rows-inARow
+	 * 1) columns up to COLUMNS-inARow 2) rows up to Rows-inARow
 	 * 
 	 * @param aBoard
 	 * @param inARow
 	 * @return
 	 */
 	private Integer markUpDiagonals(Integer[][] aBoard, int inARow) {
-		
-		for (int x = 0; x <= COLUMNS-inARow+1; x++) {
-			for (int y = 0; y <= ROWS-inARow; y++) {
-				//This is the possible start of the row
+
+		for (int x = 0; x <= COLUMNS - inARow + 1; x++) {
+			for (int y = 0; y <= ROWS - inARow; y++) {
+				// This is the possible start of the row
 				Integer disk = aBoard[x][y];
-				if(disk==0) { 
-				//its an empty slot, move to next slot
+				if (disk == 0) {
+					// its an empty slot, move to next slot
 					continue;
 				}
-				
+
 				boolean won = true;
-				for(int n = 1; n<inARow; n++) {
-					if(disk!=aBoard[x+n][y+n]) 
-					{ 
-						//didnt match, dont continue
+				for (int n = 1; n < inARow; n++) {
+					if (disk != aBoard[x + n][y + n]) {
+						// didnt match, dont continue
 						won = false;
 						break;
 					}
 				}
-				if(won) {
+				if (won) {
 					return disk;
 				}
 			}
@@ -288,37 +286,35 @@ public class Game {
 	}
 
 	/**
-	 * This looks for a winner in Diagonals going down
-	 * Marking diagonals is harder. Down lines can only start in:
+	 * This looks for a winner in Diagonals going down Marking diagonals is harder.
+	 * Down lines can only start in:
 	 * 
-	 *  1) columns up to Columns-inARow 
-	 *  2) rows up from inARow-1;
+	 * 1) columns up to Columns-inARow 2) rows up from inARow-1;
 	 * 
 	 * @param aBoard
 	 * @param inARow
 	 * @return
 	 */
 	private Integer markDownDiagonals(Integer[][] aBoard, int inARow) {
-		
-		for (int x = 0; x <= COLUMNS-inARow; x++) {
-			for (int y = inARow-1; y < ROWS; y++) {
-				//This is the possible start of the row
+
+		for (int x = 0; x <= COLUMNS - inARow; x++) {
+			for (int y = inARow - 1; y < ROWS; y++) {
+				// This is the possible start of the row
 				Integer disk = aBoard[x][y];
-				if(disk==0) { 
-				//its an empty slot, move to next slot
+				if (disk == 0) {
+					// its an empty slot, move to next slot
 					continue;
 				}
 
 				boolean won = true;
-				for(int n = 1; n<inARow; n++) {
-					if(disk!=aBoard[x+n][y-n]) 
-					{ 
-						//didnt match, dont continue
-						won=false;
+				for (int n = 1; n < inARow; n++) {
+					if (disk != aBoard[x + n][y - n]) {
+						// didnt match, dont continue
+						won = false;
 						break;
 					}
 				}
-				if(won) {
+				if (won) {
 					return disk;
 				}
 			}
@@ -328,17 +324,16 @@ public class Game {
 	}
 
 	/**
-	 * This player wants to quit the game.
-	 * The other player will win.
+	 * This player wants to quit the game. The other player will win.
+	 * 
 	 * @param name
 	 */
 	public void quit(String name) {
-		if(player1.equals(name)) {
+		if (player1.equals(name)) {
 			winner = 2;
-		}
-		else if(player2.equals(name)) {
+		} else if (player2.equals(name)) {
 			winner = 1;
-		}		
+		}
 	}
 
 }
